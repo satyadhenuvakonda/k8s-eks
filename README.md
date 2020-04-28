@@ -27,7 +27,7 @@ terraform apply
 Configure kubectl
 
 terraform output kubeconfig # save output in ~/.kube/config
-aws eks --region <region> update-kubeconfig --name terraform-eks-demo
+aws eks --region <region> update-kubeconfig --name terraform-eks-ekstf
 
 Configure config-map-auth-aws
 

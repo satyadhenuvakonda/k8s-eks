@@ -1,7 +1,7 @@
 data "aws_ami" "eks-worker" {
   filter {
     name   = "name"
-    values = ["amazon-eks-node-${aws_eks_cluster.demo.version}-v*"]
+    values = ["amazon-eks-node-${aws_eks_cluster.ekstf.version}-v*"]
   }
 
   most_recent = true
@@ -9,39 +9,39 @@ data "aws_ami" "eks-worker" {
 }
 
 locals {
-  demo-node-userdata = <<USERDATA
+  ekstf-node-userdata = <<USERDATA
 #!/bin/bash
 set -o xtrace
-/etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.demo.endpoint}' --b64-cluster-ca '${aws_eks_cluster.demo.certificate_authority[0].data}' '${var.cluster-name}'
+/etc/eks/bootstrap.sh --apiserver-endpoint '${aws_eks_cluster.ekstf.endpoint}' --b64-cluster-ca '${aws_eks_cluster.ekstf.certificate_authority[0].data}' '${var.cluster-name}'
 USERDATA
 
 }
 
-resource "aws_launch_configuration" "demo" {
+resource "aws_launch_configuration" "ekstf" {
   associate_public_ip_address = true
-  iam_instance_profile = aws_iam_instance_profile.demo-node.name
+  iam_instance_profile = aws_iam_instance_profile.ekstf-node.name
   image_id = data.aws_ami.eks-worker.id
   instance_type = "t2.large"
-  name_prefix = "terraform-eks-demo"
-  security_groups = [aws_security_group.demo-node.id]
-  user_data_base64 = base64encode(local.demo-node-userdata)
+  name_prefix = "terraform-eks-ekstf"
+  security_groups = [aws_security_group.ekstf-node.id]
+  user_data_base64 = base64encode(local.ekstf-node-userdata)
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
-resource "aws_autoscaling_group" "demo" {
+resource "aws_autoscaling_group" "ekstf" {
   desired_capacity = 2
-  launch_configuration = aws_launch_configuration.demo.id
+  launch_configuration = aws_launch_configuration.ekstf.id
   max_size = 2
   min_size = 1
-  name = "terraform-eks-demo"
+  name = "terraform-eks-ekstf"
   vpc_zone_identifier = module.vpc.public_subnets
 
   tag {
     key = "Name"
-    value = "terraform-eks-demo"
+    value = "terraform-eks-ekstf"
     propagate_at_launch = true
   }
 
